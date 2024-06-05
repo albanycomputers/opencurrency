@@ -7,7 +7,9 @@ This module provides visitors to your web site with currency conversion rates.
 It also provides a callable API for currency conversion that other modules can
 use.
 
-It relies on Yahoo! Finance for getting the currency exchange data.
+It relies on https://openexchangerates.org for getting the currency exchange
+data. You will need to register for an API key, there is a free account which
+offers 1000 api calls per month.
 
 Features:
 ---------
@@ -32,6 +34,15 @@ This module provides several options that customize its look and feel:
   calculations. See currency.api.php for details.
 
 
+## Credits / Inspiration:
+-------------------------
+Author
+------
+Khalid Baheyeldin (http://baheyeldin.com/khalid and http://2bits.com)
+
+Forked from currency moduled ported to Backdrop by
+Andy Shillingford (https://github.com/docwilmot)
+
 Installation
 ------------
 
@@ -46,10 +57,10 @@ Installation
 
 - Use the form at path '/currency'
 
-Author
-------
-Khalid Baheyeldin (http://baheyeldin.com/khalid and http://2bits.com)
+## Sponsorship:
+ - [Albany Computer Services] (https://www.albany-computers.co.uk)
+ - [Albany Web Design] (https://www.albanywebdesign.co.uk)
+ - [Albany Hosting] (https://www.albany-hosting.co.uk)
 
-Maintainer
-----------
-Ported to Backdrop by Andy Shillingford (https://github.com/docwilmot)
+## Current Maintainer(s):
+- [Steve Moorhouse (albanycomputers)] (https://github.com/albanycomputers)
