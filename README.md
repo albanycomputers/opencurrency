@@ -1,6 +1,5 @@
-Currency
-========
-
+Open Currency
+=============
 
 This module provides visitors to your web site with currency conversion rates.
 
