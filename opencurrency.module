@@ -5,22 +5,19 @@
  * This module provides currency exchange rates.
  */
 
-
-// Copyright 2005 Khalid Baheyeldin http://2bits.com
-
 // 3600 is once an hour
 define('UPDATE_FREQUENCY', 3600);
 
 /**
  * Implements hook_theme().
  */
-function currency_theme() {
+function opencurrency_theme() {
   return array(
-    'currency_amount' => array(
+    'opencurrency_amount' => array(
       'arguments' => array('amount' => NULL, 'attributes' => NULL)
     ),
-    'currency_result' => array(
-      'variables' => array('currency_from' => NULL, 'currency_to' => NULL, 'amount' => NULL),
+    'opencurrency_result' => array(
+      'variables' => array('opencurrency_from' => NULL, 'opencurrency_to' => NULL, 'amount' => NULL),
     ),
   );
 }
@@ -28,18 +25,18 @@ function currency_theme() {
 /**
  * Implements hook_menu().
  */
-function currency_menu() {
+function opencurrency_menu() {
   $items['currency'] = array(
     'title' => 'Currency exchange',
     'access arguments' => array('use currency'),
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('currency_form'),
+    'page arguments' => array('opencurrency_form'),
   );
   $items['admin/config/regional/currency'] = array(
     'title' => 'Currency settings',
     'description' => 'Settings for currency.',
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('currency_admin_settings'),
+    'page arguments' => array('opencurrency_admin_settings'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -47,11 +44,11 @@ function currency_menu() {
   return $items;
 
 }
-  
+
 /**
  * Menu callback; module settings form.
  */
-function currency_admin_settings() {
+function opencurrency_admin_settings() {
   $config = config('currency.settings');
   $form['#config'] = 'currency.settings';
   $form['default_from'] = array(
@@ -81,8 +78,8 @@ function currency_admin_settings() {
 
   $form['watchdog'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Log all currency exchange requests to watchdog'),    
-    '#default_value' => $config->get('watchdog'),    
+    '#title' => t('Log all currency exchange requests to watchdog'),
+    '#default_value' => $config->get('watchdog'),
   );
 
   $period = backdrop_map_assoc(array(900, 1800, 3600, 10800, 21600, 32400, 43200, 86400), 'format_interval');
@@ -95,7 +92,7 @@ function currency_admin_settings() {
   );
 
   return system_settings_form($form);
-}  
+}
 
 /**
  * Currency exchange rate API function.
@@ -110,7 +107,7 @@ function currency_admin_settings() {
  *   $from = 'CAD';
  *   $to   = 'USD';
  *   $amt  = 20;
- *   $ret  = currency_convert($from, $to, $amt);
+ *   $ret  = opencurrency_convert($from, $to, $amt);
  *   if ($ret['status'] == FALSE) {
  *     backdrop_set_message(t('An error occured: '). $ret['message']);
  *   }
@@ -118,9 +115,9 @@ function currency_admin_settings() {
  *     print $amt . ' ' . $from . ' = ' . $ret['value'] . ' ' . $to;
  *   }
  *
- * @param $currency_from
+ * @param $opencurrency_from
  *   Currency to convert from.
- * @param $currency_to
+ * @param $opencurrency_to
  *   Currency to convert to.
  * @param $amount
  *   (optional) Amount to convert. Defaults to 1.
@@ -135,14 +132,14 @@ function currency_admin_settings() {
  *    $result['message'] - 'success' when status is TRUE, otherwise, contains a
  *                         descriptive error text
  *   The following items are only returned when status is TRUE
- *    $result['value'] - $amount * exchange rate of $currency_from into $currency_to
- *    $result['rate'] - Exchange rate of $currency_from into $currency_to
+ *    $result['value'] - $amount * exchange rate of $opencurrency_from into $opencurrency_to
+ *    $result['rate'] - Exchange rate of $opencurrency_from into $opencurrency_to
  *    $result['timestamp'] - Timestamp of the last update to the rates
  *    $result['date'] - Date of the last update to the rates (Format is "m/d/yyyy")
  *    $result['time'] - Time of the last update to the rates (Format is "h:mmpm")
  */
-function currency_convert($currency_from, $currency_to, $amount = 1, $decimals = NULL) {
-  $currency_array = array(
+function opencurrency_convert($opencurrency_from, $opencurrency_to, $amount = 1, $decimals = NULL) {
+  $opencurrency_array = array(
     's'  => 'Currencies',
     'l1' => 'Last',
     'd1' => 'Date',
@@ -158,8 +155,8 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
   $result['date'] = NULL;
   $result['time'] = NULL;
 
-  $from = backdrop_strtoupper($currency_from);
-  $to   = backdrop_strtoupper($currency_to);
+  $from = backdrop_strtoupper($opencurrency_from);
+  $to   = backdrop_strtoupper($opencurrency_to);
 
   if ($from == $to) {
     return array(
@@ -176,23 +173,25 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
 
   // Load cached rate, if exists.
   $record = NULL;
-  $cached = currency_load($record, $currency_from, $currency_to);
+  $cached = opencurrency_load($record, $opencurrency_from, $opencurrency_to);
 
   if (!$record) {
     // Cached rate not found, go get it.
-    $url = 'http://download.finance.yahoo.com/d/quotes.csv?e=.csv&f=' . currency_get_fields($currency_array) . '&s=' . $from . $to . '=X';
+    // - original - $url = 'http://download.finance.yahoo.com/d/quotes.csv?e=.csv&f=' . opencurrency_get_fields($opencurrency_array) . '&s=' . $from . $to . '=X';
+
+    $url = 'https://openexchangerates.org/api/latest.json?app_id=$openexchangeapi';
 
     // Validate the passed currency codes, to make sure they are valid.
-    if (FALSE == currency_get_description($from)) {
-      $msg = t("currency: Invalid currency_from = %from", array('%from' => $from));
-      currency_log($msg, WATCHDOG_ERROR);
+    if (FALSE == opencurrency_get_description($from)) {
+      $msg = t("currency: Invalid opencurrency_from = %from", array('%from' => $from));
+      opencurrency_log($msg, WATCHDOG_ERROR);
       $result['message'] = $msg;
       $result['status'] = FALSE;
     }
 
-    if (FALSE == currency_get_description($to)) {
-      $msg = t("currency: Invalid currency_to = %to", array('%to' => $to));
-      currency_log($msg, WATCHDOG_ERROR);
+    if (FALSE == opencurrency_get_description($to)) {
+      $msg = t("currency: Invalid opencurrency_to = %to", array('%to' => $to));
+      opencurrency_log($msg, WATCHDOG_ERROR);
       return FALSE;
       $result['message'] = $msg;
       $result['status'] = FALSE;
@@ -200,7 +199,7 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
 
     if (!is_numeric($amount)) {
       $msg = t("currency: Invalid amount = %amount", array('%amount' => $amount));
-      currency_log($msg, WATCHDOG_ERROR);
+      opencurrency_log($msg, WATCHDOG_ERROR);
       $result['message'] = $msg;
       $result['status'] = FALSE;
     }
@@ -208,13 +207,13 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
     $http_result = backdrop_http_request($url);
     if (isset($http_result->error)) {
       $msg = t('currency: backdrop_http_request error: @error', array('@error' => $http_result->error));
-      currency_log($msg, WATCHDOG_ERROR);
+      opencurrency_log($msg, WATCHDOG_ERROR);
       return FALSE;
     }
 
     if ($http_result->code != 200) {
       $msg = t('currency: backdrop_http_request code: @code', array('@code' => $http_result->code));
-      currency_log($msg, WATCHDOG_ERROR);
+      opencurrency_log($msg, WATCHDOG_ERROR);
       return FALSE;
     }
 
@@ -222,16 +221,16 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
   }
 
   if (!$record) {
-    $msg = t('currency: cannot contact Yahoo Finance host');
-    currency_log($msg, WATCHDOG_ERROR);
+    $msg = t('currency: cannot contact Open Exchange host');
+    opencurrency_log($msg, WATCHDOG_ERROR);
     $result['status'] = FALSE;
     $result['message'] = $msg;
   }
   else {
-    $currency_data = explode(',', $record);
-    $rate = $currency_data[1];
-    $date = $currency_data[2];
-    $time = $currency_data[3];
+    $opencurrency_data = explode(',', $record);
+    $rate = $opencurrency_data[1];
+    $date = $opencurrency_data[2];
+    $time = $opencurrency_data[3];
     $timestamp = strtotime(str_replace('"', '', $date) . ' ' . str_replace('"', '', $time));
 
     // Calculate the result.
@@ -249,7 +248,7 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
 
     // Log it.
     $msg = t("currency: @amount @from = @value @to", array('@amount' => $amount, '@from' => $from, '@value' => $value, '@to' => $to));
-    currency_log($msg, WATCHDOG_NOTICE);
+    opencurrency_log($msg, WATCHDOG_NOTICE);
 
     // Got what we need.
     $result['value'] = $value;
@@ -262,7 +261,7 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
 
     if (!$cached) {
       // Cache rate does not exist, save it.
-      currency_save($currency_from, $currency_to, $rate);
+      opencurrency_save($opencurrency_from, $opencurrency_to, $rate);
     }
   }
 
@@ -279,7 +278,7 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
  * Here is an example on how to use it:
  *
  *   $ccode = 'CAD';
- *   $ret = currency_get_descriptionription($ccode);
+ *   $ret = opencurrency_get_descriptionription($ccode);
  *   if ($ret == FALSE) {
  *     backdrop_set_message(t('Could not get description'));
  *   }
@@ -294,8 +293,8 @@ function currency_convert($currency_from, $currency_to, $amount = 1, $decimals =
  *   Contains FALSE if the currency cannot be found, otherwise, it
  *   has the description.
  */
-function currency_get_description($currency) {
-  $list = currency_get_list();
+function opencurrency_get_description($currency) {
+  $list = opencurrency_get_list();
   if (isset($list[$currency])) {
     return $list[$currency];
   }
@@ -305,10 +304,10 @@ function currency_get_description($currency) {
 /**
  * Returns an array of all currency names.
  */
-function currency_get_list() {
+function opencurrency_get_list() {
   static $list;
   if (!isset($list)) {
-    $currencies = currency_get_currencies();
+    $currencies = opencurrency_get_currencies();
     $list = array();
     foreach ($currencies as $code => $currency) {
       $list[$code] = $currency['name'];
@@ -320,10 +319,10 @@ function currency_get_list() {
 /**
  * Returns an array of all currency symbols.
  */
-function currency_get_symbols() {
+function opencurrency_get_symbols() {
   static $symbols;
   if (!isset($symbols)) {
-    $currencies = currency_get_currencies();
+    $currencies = opencurrency_get_currencies();
     $symbols = array();
     foreach ($currencies as $code => $currency) {
       $symbols[$code] = $currency['symbol'];
@@ -341,28 +340,28 @@ function currency_get_symbols() {
  * @return $result
  *   Returns the symbol for the provided currency code or NULL if not found.
  */
-function currency_get_symbol($code) {
-  $symbols = currency_get_symbols();
+function opencurrency_get_symbol($code) {
+  $symbols = opencurrency_get_symbols();
   return isset($symbols[$code]) ? $symbols[$code] : NULL;
 }
 
 /**
  * Helper function to build yahoo finance api request.
  */
-function currency_get_fields($array) {
+function opencurrency_get_fields($array) {
   $field_string = NULL;
 
   while (list($field, $header) = each($array)) {
     $field_string = $field_string . $field;
   }
-  
+
   return $field_string;
 }
 
 /**
  * Helper function to log messages to watchdog.
  */
-function currency_log($msg = '', $severity = WATCHDOG_NOTICE, $type = 'currency') {
+function opencurrency_log($msg = '', $severity = WATCHDOG_NOTICE, $type = 'currency') {
   if ($severity == WATCHDOG_ERROR || config_get('currency.settings', 'watchdog')) {
     watchdog($type, $msg, array(), $severity);
   }
@@ -375,21 +374,21 @@ function currency_log($msg = '', $severity = WATCHDOG_NOTICE, $type = 'currency'
  * @return
  *   Rate by reference, true if exists otherwise false.
  */
-function currency_load(&$record, $currency_from, $currency_to) {
+function opencurrency_load(&$record, $opencurrency_from, $opencurrency_to) {
   static $rate = array();
   $cached = TRUE;
 
-  if (isset($rate[$currency_from][$currency_to])) {
+  if (isset($rate[$opencurrency_from][$opencurrency_to])) {
     // retrieve cached rate from static array variable
-    $record = $rate[$currency_from][$currency_to];
+    $record = $rate[$opencurrency_from][$opencurrency_to];
   }
   else {
-    $result = db_query("SELECT * FROM {currencyapi} WHERE currency_from = :currency_from AND currency_to = :currency_to AND timestamp > :timestamp", array(':currency_from' => $currency_from, ':currency_to' => $currency_to, ':timestamp' => REQUEST_TIME - config_get('currency.settings', 'fetch')))->fetchObject();
+    $result = db_query("SELECT * FROM {currencyapi} WHERE opencurrency_from = :opencurrency_from AND opencurrency_to = :opencurrency_to AND timestamp > :timestamp", array(':opencurrency_from' => $opencurrency_from, ':opencurrency_to' => $opencurrency_to, ':timestamp' => REQUEST_TIME - config_get('currency.settings', 'fetch')))->fetchObject();
     if ($result) {
-      $currency = array($currency_from . $currency_to . '=X', $result->rate, date('n/j/Y', $result->timestamp), date('g:ia', $result->timestamp));
+      $currency = array($opencurrency_from . $opencurrency_to . '=X', $result->rate, date('n/j/Y', $result->timestamp), date('g:ia', $result->timestamp));
       $record = implode(',', $currency);
       // cache rate in static array variable for subsequent queries
-      $rate[$currency_from][$currency_to] = $record;
+      $rate[$opencurrency_from][$opencurrency_to] = $record;
     }
     else {
       // rate does not exist in database cache
@@ -404,16 +403,16 @@ function currency_load(&$record, $currency_from, $currency_to) {
 /**
  * Cache rate for from and to countries delete outdated record, if exists.
  *
- * @param string $currency_from
- * @param string $currency_to
+ * @param string $opencurrency_from
+ * @param string $opencurrency_to
  * @param decimal $rate
  */
-function currency_save($currency_from, $currency_to, $rate) {
+function opencurrency_save($opencurrency_from, $opencurrency_to, $rate) {
   // Insert or update record.
   db_merge('currencyapi')
     ->key(array(
-      'currency_from' => $currency_from,
-      'currency_to' => $currency_to,
+      'opencurrency_from' => $opencurrency_from,
+      'opencurrency_to' => $opencurrency_to,
     ))
     ->fields(array(
       'rate' => $rate,
@@ -433,18 +432,18 @@ function currency_save($currency_from, $currency_to, $rate) {
  * @return string
  *   Formatted string.
  */
-function theme_currency_amount($amount, $attributes) {
+function theme_opencurrency_amount($amount, $attributes) {
   return t('!symbol!amount !code', array('!symbol' => $attributes['symbol'], '!amount' => number_format($amount, $attributes['decimals']), '!code' => $attributes['code']));
 }
 
 /**
  * Implements hook_filter_info().
  */
-function currency_filter_info() {
-  $filters['currency_exchange'] = array(
+function opencurrency_filter_info() {
+  $filters['opencurrency_exchange'] = array(
     'title' => t('Currency exchange'),
     'description' => t("Converts currency tokens ([currency:from:to:value:decimals]) to a currency exchange rate. The 'decimals' parameter is optional. Eg: [currency:EUR:USD:100:2]."),
-    'process callback' => '_currency_filter',
+    'process callback' => '_opencurrency_filter',
   );
   return $filters;
 }
@@ -452,18 +451,18 @@ function currency_filter_info() {
 /**
  * Converts currency tokens.
  */
-function _currency_filter($text) {
-  return preg_replace_callback('/\[currency:(.*?)\]/i', '_currency_filter_process', $text);
+function _opencurrency_filter($text) {
+  return preg_replace_callback('/\[currency:(.*?)\]/i', '_opencurrency_filter_process', $text);
 }
 
 /**
  * Processes values for the currency api filter.
  */
-function _currency_filter_process($matches) {
+function _opencurrency_filter_process($matches) {
   $return = $matches[1];
   $convert = explode(':', $matches[1]);
 
-  $result = currency_convert($convert[0], $convert[1], $convert[2], $convert[3]);
+  $result = opencurrency_convert($convert[0], $convert[1], $convert[2], $convert[3]);
 
   if ($result['status']) {
     $return = $result['value'];
@@ -475,7 +474,7 @@ function _currency_filter_process($matches) {
 /**
  * Returns an array of all currency properties.
  */
-function currency_get_currencies() {
+function opencurrency_get_currencies() {
   $currencies = array(
     'AED' => array(
       'name' => t('UAE Dirham (AED)'),
@@ -1605,7 +1604,7 @@ function currency_get_currencies() {
 /**
  * Implements hook_permission().
  */
-function currency_permission() {
+function opencurrency_permission() {
   return array(
     'use currency' => array(
       'title' => t('Use currency'),
@@ -1616,31 +1615,31 @@ function currency_permission() {
 /**
  * Currency exchange form.
  */
-function currency_form($form, &$form_state) {
+function opencurrency_form($form, &$form_state) {
   $config = config('currency.settings');
-  if (isset($form_state['storage']['currency_amount']) && isset($form_state['storage']['currency_from']) && $form_state['storage']['currency_to']) {
+  if (isset($form_state['storage']['opencurrency_amount']) && isset($form_state['storage']['opencurrency_from']) && $form_state['storage']['opencurrency_to']) {
     // Get the saved data from the previous form submission.
-    $amount = $form_state['storage']['currency_amount'];
-    $from = $form_state['storage']['currency_from'];
-    $to = $form_state['storage']['currency_to'];
+    $amount = $form_state['storage']['opencurrency_amount'];
+    $from = $form_state['storage']['opencurrency_from'];
+    $to = $form_state['storage']['opencurrency_to'];
 
-    $form['currency_result'] = array(
-      '#markup' => theme('currency_result', array('currency_from' => $from, 'currency_to' => $to, 'amount' => $amount)),
+    $form['opencurrency_result'] = array(
+      '#markup' => theme('opencurrency_result', array('opencurrency_from' => $from, 'opencurrency_to' => $to, 'amount' => $amount)),
       '#weight' => 5,
     );
   }
   else {
     // Get the saved data from the session, if any.
-    $amount = isset($_SESSION['currency_amount']) ? $_SESSION['currency_amount'] : 1;
-    $from = isset($_SESSION['currency_from']) ? $_SESSION['currency_from'] : $config->get('default_from');
-    $to = isset($_SESSION['currency_to']) ? $_SESSION['currency_to'] : $config->get('default_to');
+    $amount = isset($_SESSION['opencurrency_amount']) ? $_SESSION['opencurrency_amount'] : 1;
+    $from = isset($_SESSION['opencurrency_from']) ? $_SESSION['opencurrency_from'] : $config->get('default_from');
+    $to = isset($_SESSION['opencurrency_to']) ? $_SESSION['opencurrency_to'] : $config->get('default_to');
   }
 
-  $form['currency_description'] = array(
+  $form['opencurrency_description'] = array(
     '#markup' => $config->get('description'),
   );
 
-  $form['currency_amount'] = array(
+  $form['opencurrency_amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount'),
     '#default_value' => $amount,
@@ -1648,19 +1647,19 @@ function currency_form($form, &$form_state) {
     '#maxlength' => 9,
     '#description' => t('Amount to convert'),
   );
-  
-  $form['currency_from'] = array(
+
+  $form['opencurrency_from'] = array(
     '#type' => 'select',
     '#title' => t('From'),
     '#default_value' => $from,
-    '#options' => currency_get_list(),
+    '#options' => opencurrency_get_list(),
   );
-  
-  $form['currency_to'] = array(
+
+  $form['opencurrency_to'] = array(
     '#type' => 'select',
     '#title' => t('To'),
     '#default_value' => $to,
-    '#options' => currency_get_list(),
+    '#options' => opencurrency_get_list(),
   );
 
   $form['submit'] = array(
@@ -1675,57 +1674,57 @@ function currency_form($form, &$form_state) {
 /**
  * Validate handler for the currency exchange form.
  */
-function currency_form_validate($form, &$form_state) {
-  if (!$form_state['values']['currency_amount']) {
-    form_set_error('currency_amount', t('Amount is required.'));
+function opencurrency_form_validate($form, &$form_state) {
+  if (!$form_state['values']['opencurrency_amount']) {
+    form_set_error('opencurrency_amount', t('Amount is required.'));
   }
 
-  if (!is_numeric($form_state['values']['currency_amount'])) {
-    form_set_error('currency_amount', t('Invalid Amount. Please enter a valid numeric amount.'));
+  if (!is_numeric($form_state['values']['opencurrency_amount'])) {
+    form_set_error('opencurrency_amount', t('Invalid Amount. Please enter a valid numeric amount.'));
   }
 }
 
 /**
  * Submit handler for the currency exchange form.
  */
-function currency_form_submit($form, &$form_state) {
+function opencurrency_form_submit($form, &$form_state) {
   // Save the last used values in the session.
-  $_SESSION['currency_amount'] = $form_state['values']['currency_amount'];
-  $_SESSION['currency_from'] = $form_state['values']['currency_from'];
-  $_SESSION['currency_to'] = $form_state['values']['currency_to'];
+  $_SESSION['opencurrency_amount'] = $form_state['values']['opencurrency_amount'];
+  $_SESSION['opencurrency_from'] = $form_state['values']['opencurrency_from'];
+  $_SESSION['opencurrency_to'] = $form_state['values']['opencurrency_to'];
 
   // Rebuild the form.
   $form_state['rebuild'] = TRUE;
 
   // Store submitted values.
-  $form_state['storage']['currency_amount'] = $form_state['values']['currency_amount'];
-  $form_state['storage']['currency_from'] = $form_state['values']['currency_from'];
-  $form_state['storage']['currency_to'] = $form_state['values']['currency_to'];
+  $form_state['storage']['opencurrency_amount'] = $form_state['values']['opencurrency_amount'];
+  $form_state['storage']['opencurrency_from'] = $form_state['values']['opencurrency_from'];
+  $form_state['storage']['opencurrency_to'] = $form_state['values']['opencurrency_to'];
 }
 
 /**
  * Theme implementation for currency exchange result.
  */
-function theme_currency_result($variables) {
+function theme_opencurrency_result($variables) {
   $output = '';
 
-  $currency_from = $variables['currency_from'];
-  $currency_to = $variables['currency_to'];
+  $opencurrency_from = $variables['opencurrency_from'];
+  $opencurrency_to = $variables['opencurrency_to'];
   $amount = $variables['amount'];
 
-  $url = 'http://finance.yahoo.com/q?s=' . $currency_from . $currency_to . '=X';
+  $url = 'http://finance.yahoo.com/q?s=' . $opencurrency_from . $opencurrency_to . '=X';
 
-  $ret = currency_convert($currency_from, $currency_to, $amount);
-  if ($ret['status'] == FALSE) { 
+  $ret = opencurrency_convert($opencurrency_from, $opencurrency_to, $amount);
+  if ($ret['status'] == FALSE) {
     $output .= t('Currency exchange error: @message', array('@message' => $ret['message']));
   }
   else {
     $output .= '<p class="result">';
     $output .=  t('@amount @from = @value @to', array(
       '@amount' => $amount,
-      '@from' => currency_get_description($currency_from),
+      '@from' => opencurrency_get_description($opencurrency_from),
       '@value' => $ret['value'],
-      '@to' => currency_get_description($currency_to)));
+      '@to' => opencurrency_get_description($opencurrency_to)));
     $output .= '</p>';
     $output .= '<p class="detailed-history">' . l(t('Detailed history and chart'), $url) . '</p>';
   }
@@ -1739,7 +1738,7 @@ function theme_currency_result($variables) {
 /**
  * Implements hook_views().
  */
-function currency_views_api() {
+function opencurrency_views_api() {
   return array(
     'api' => 3,
     'path' => backdrop_get_path('module', 'currency') . '/views',
@@ -1760,10 +1759,10 @@ function curreny_config_info() {
 /**
  * Implements hook_autoload_info().
  */
-function currency_autoload_info() {
+function opencurrency_autoload_info() {
   return array(
-    'currency_handler_filter_currency' => 'views/currency_handler_filter_currency.inc',
-    'currency_handler_field_currency' => 'views/currency_handler_field_currency.inc',
-    'currency_handler_argument_currency' => 'views/currency_handler_argument_currency.inc',
+    'opencurrency_handler_filter_currency' => 'views/opencurrency_handler_filter_currency.inc',
+    'opencurrency_handler_field_currency' => 'views/opencurrency_handler_field_currency.inc',
+    'opencurrency_handler_argument_currency' => 'views/opencurrency_handler_argument_currency.inc',
   );
 }

@@ -11,7 +11,7 @@
  *   $from = 'CAD';
  *   $to   = 'USD';
  *   $amt  = 20;
- *   $ret  = currency_convert($from, $to, $amt);
+ *   $ret  = opencurrency_convert($from, $to, $amt);
  *   if ($ret['status'] == FALSE) {
  *     backdrop_set_message(t('An error occured: '). $ret['message']);
  *   }
@@ -19,9 +19,9 @@
  *     print $amt . ' ' . $from . ' = ' . $ret['value'] . ' ' . $to;
  *   }
  *
- * @param $currency_from
+ * @param $opencurrency_from
  *   Currency to convert from.
- * @param $currency_to
+ * @param $opencurrency_to
  *   Currency to convert to.
  * @param $amount
  *   (optional) Amount to convert. Defaults to 1.
@@ -36,14 +36,14 @@
  *    $result['message'] - 'success' when status is TRUE, otherwise, contains a
  *                         descriptive error text
  *   The following items are only returned when status is TRUE
- *    $result['value'] - $amount * exchange rate of $currency_from into $currency_to
- *    $result['rate'] - Exchange rate of $currency_from into $currency_to
+ *    $result['value'] - $amount * exchange rate of $opencurrency_from into $opencurrency_to
+ *    $result['rate'] - Exchange rate of $opencurrency_from into $opencurrency_to
  *    $result['timestamp'] - Timestamp of the last update to the rates
  *    $result['date'] - Date of the last update to the rates (Format is "m/d/yyyy")
  *    $result['time'] - Time of the last update to the rates (Format is "h:mmpm")
  */
-function currency_convert($currency_from, $currency_to, $amount = 1) {
-  
+function opencurrency_convert($opencurrency_from, $opencurrency_to, $amount = 1) {
+
 }
 
 /**
@@ -54,7 +54,7 @@ function currency_convert($currency_from, $currency_to, $amount = 1) {
  * Here is an example on how to use it:
  *
  *   $ccode = 'CAD';
- *   $ret = currency_get_description($ccode);
+ *   $ret = opencurrency_get_description($ccode);
  *   if ($ret == FALSE)
  *   {
  *     backdrop_set_message(t('Could not get description'));
@@ -71,8 +71,8 @@ function currency_convert($currency_from, $currency_to, $amount = 1) {
  *   Contains FALSE if the currency cannot be found, otherwise, it
  *   has the description.
  */
-function currency_get_desc($currency) {
-  
+function opencurrency_get_desc($currency) {
+
 }
 
 /**
@@ -83,7 +83,7 @@ function currency_get_desc($currency) {
  * Here is an example on how to use it:
  *
  *   $ccode = 'CAD';
- *   $ret = currency_get_symbol($ccode);
+ *   $ret = opencurrency_get_symbol($ccode);
  *   if ($ret == FALSE) {
  *     backdrop_set_message(t('Could not get symbol'));
  *   }
@@ -98,13 +98,13 @@ function currency_get_desc($currency) {
  *   Contains FALSE if the currency symbol cannot be found, otherwise, it
  *   has the symbol.
  */
-function currency_get_symbol($currency) {
-  
+function opencurrency_get_symbol($currency) {
+
 }
 
 /**
  * Returns a list of supported currencies
  */
-function currency_get_list() {
-  
+function opencurrency_get_list() {
+
 }

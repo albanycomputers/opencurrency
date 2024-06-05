@@ -1,0 +1,6 @@
+name = Open Currency
+description = Provides currency exchange rates from Open Currecny API.
+package = Open Currency
+backdrop = 1.x
+type = module
+configure = admin/config/regional/opencurrency

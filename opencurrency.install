@@ -10,18 +10,18 @@
  *
  * Define schema for currencyapi database
  */
-function currency_schema() {
+function opencurrency_schema() {
   $schema['currencyapi'] = array(
     'description' => 'Table to cache currency rates that have been looked up by the Currency API module.',
     'fields' => array(
-      'currency_from' => array(
+      'opencurrency_from' => array(
         'description' => 'ISO 4217 3-character currency code for destination currency, as a character string.',
         'type' => 'varchar',
         'length' => 10,
         'not null' => TRUE,
         'default' => '',
       ),
-      'currency_to' => array(
+      'opencurrency_to' => array(
         'description' => 'ISO 4217 3-character currency code for destination currency, as a character string.',
         'type' => 'varchar',
         'length' => 10,
@@ -29,7 +29,7 @@ function currency_schema() {
         'default' => '',
       ),
       'rate' => array(
-        'description' => 'Conversion rate, currency_to per currency_from, as a floating point number.',
+        'description' => 'Conversion rate, opencurrency_to per opencurrency_from, as a floating point number.',
         'type' => 'float',
         'size' => 'normal',
         'not null' => TRUE,
@@ -42,7 +42,7 @@ function currency_schema() {
         'default' => 0,
       ),
     ),
-    'primary key' => array('currency_from', 'currency_to'),
+    'primary key' => array('opencurrency_from', 'opencurrency_to'),
   );
 
   return $schema;

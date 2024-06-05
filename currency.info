@@ -1,6 +1,0 @@
-name = Currency
-description = Provides currency exchange rates.
-package = Currency 
-backdrop = 1.x
-type = module
-configure = admin/config/regional/currency

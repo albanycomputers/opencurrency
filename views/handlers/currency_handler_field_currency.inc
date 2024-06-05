@@ -1,22 +1,22 @@
-<?php 
+<?php
 
 /**
  * @file
  *   Views field handler.
  */
 
-class currency_handler_field_currency extends views_handler_field {
-  function render($values) {  
+class opencurrency_handler_field_currency extends views_handler_field {
+  function render($values) {
     if ($this->options['display_code_only']) {
       return parent::render($values);
     }
-    else {                 
-      $currency_names = currency_get_list();
-      $value = $currency_names[$values->{$this->field_alias}];
+    else {
+      $opencurrency_names = opencurrency_get_list();
+      $value = $opencurrency_names[$values->{$this->field_alias}];
       return check_plain($value);
     }
   }
-    
+
   function option_definition() {
     $options = parent::option_definition();
     $options['display_code_only'] = array('default' => FALSE);
@@ -31,5 +31,5 @@ class currency_handler_field_currency extends views_handler_field {
       '#type' => 'checkbox',
       '#default_value' => !empty($this->options['display_code_only']),
     );
-  }  
+  }
 }
